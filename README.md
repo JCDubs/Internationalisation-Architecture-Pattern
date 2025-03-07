@@ -4,7 +4,7 @@
 
 This project demonstrates a Serverless Order Service API that implements a robust internationalization software architecture pattern. The pattern enables a "develop once, deploy many" approach, allowing the service to be developed as a single codebase but deployed to multiple regions with region-specific customizations.
 
-This repository accompanies the blog post "Develop Once, Deploy Many: An Internationalization Software Pattern 🌎".
+This repository accompanies the blog post ["Develop Once, Deploy Many: An Internationalization Software Pattern 🌎"](https://jcdubs.medium.com/develop-once-deploy-many-an-internationalisation-software-pattern-fcca78b16802).
 
 ## Architecture Overview
 
