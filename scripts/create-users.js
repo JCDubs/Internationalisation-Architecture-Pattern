@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 AWS.config.region = 'eu-west-1';
 const cognitoIDP = new AWS.CognitoIdentityServiceProvider();
 
-const userPoolId = '{USER_POOL_ID}';
+const userPoolId = 'eu-west-1_ePYUKtNdv';// '{USER_POOL_ID}';
 
 const usersAndGroups = [
   {

@@ -33,5 +33,5 @@ let lastName = process.argv
 if (!firstName || !lastName) {
   throw new Error('firstName and lastName are required');
 }
-const clientId = 'CLIENT-ID';
+const clientId = '3c30tqotgvf4h867mkuncfpog4';// '{CLIENT-ID}';
 loginUser(firstName, lastName, clientId);

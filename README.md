@@ -1,53 +1,177 @@
-# Order Service Example Project.
+# Internationalization Order Service Example Project
 
 ## Introduction
 
-This project is an example Serverless order servie API providing all CRUD operations and authentication.
+This project demonstrates a Serverless Order Service API that implements a robust internationalization software architecture pattern. The pattern enables a "develop once, deploy many" approach, allowing the service to be developed as a single codebase but deployed to multiple regions with region-specific customizations.
+
+This repository accompanies the blog post "Develop Once, Deploy Many: An Internationalization Software Pattern 🌎".
+
+## Architecture Overview
+
+The project follows a hexagonal (ports and adapters) architecture pattern, which separates the core business logic from external concerns:
+
+- **Core Domain**: Contains the business logic and use cases for order management
+- **Primary Adapters**: Handle incoming requests (API Gateway + Lambda)
+- **Secondary Adapters**: Manage outgoing interactions (DynamoDB, external services)
+- **Region-specific Code**: Customizations for different regions (ES, GB, US)
+
+The architecture enables:
+- Clear separation of concerns
+- Region-specific customizations without duplicating code
+- Consistent implementation of business rules across all regions
+- Simplified maintenance and feature development
+
+## Technologies Used
+
+- **AWS CDK**: Infrastructure as Code for AWS resource provisioning
+- **AWS Lambda**: Serverless compute for API handlers
+- **Amazon API Gateway**: REST API management
+- **Amazon DynamoDB**: NoSQL database using single-table design
+- **Amazon Cognito**: User authentication and authorization
+- **Node.js**: Runtime environment
+- **TypeScript**: Programming language
+- **Jest**: Testing framework
+
+## Project Structure
+
+```
+├── infra/                  # CDK infrastructure code
+│   ├── global/             # Shared infrastructure components
+│   ├── es/                 # Spain-specific infrastructure
+│   ├── gb/                 # UK-specific infrastructure
+│   └── us/                 # US-specific infrastructure
+├── src/                    # Application source code
+│   ├── global/             # Shared application components
+│   │   ├── adapters/       # Primary and secondary adapters
+│   │   ├── use-cases/      # Business logic use cases
+│   │   ├── models/         # Domain models
+│   │   └── schemas/        # Validation schemas
+│   ├── es/                 # Spain-specific code
+│   ├── gb/                 # UK-specific code
+│   └── us/                 # US-specific code
+├── scripts/                # Utility scripts
+└── test/                   # Test files
+```
+
+## Prerequisites
+
+- Node.js (version specified in `.nvmrc`)
+- AWS CLI configured with appropriate credentials
+- AWS CDK installed globally (`npm install -g aws-cdk`)
 
 ## Deployment
 
-The Order API can be deployed to an AWS account using the CDK deploy command.
+The Order API can be deployed to an AWS account using the CDK deploy command:
 
 ```bash
-$ npx cdk deploy --all
+# Install dependencies
+npm install
+
+# Bootstrap CDK (if not already done)
+npx cdk bootstrap
+
+# Deploy all stacks
+npx cdk deploy --all
 ```
 
-Doing so will create the `auth`, `stateful` and `stateless` Cloudformation stacks. The API will then be available through the auto generated, public API Gateway URL.
+This will create three CloudFormation stacks:
+- `auth`: Cognito user pool and identity providers
+- `stateful`: DynamoDB tables and other persistent resources
+- `stateless`: Lambda functions, API Gateway, and other compute resources
 
-## Order, Customer and User Data Hydration
+The API will be available through the auto-generated, public API Gateway URL provided in the deployment output.
 
-The project contains a directory named `scripts` containing a number of utility scripts to be used to hydrate the order and customer database and the Cognito user pool. They are to be executed once all stacks have been completelty deployed.
+## Data Initialization
 
-### Order and Customer Data Hydration Script
+The project includes utility scripts to populate the database and user pool with test data.
 
-The `scripts/hydrate.js` script should be executed post deployment to insert the canned order and customer data into the database using the following command.
+### Order and Customer Data Initialization
+
+After deployment, initialize the database with sample order and customer data:
 
 ```bash
-$ ./scripts/hydrate.js
+# For global data
+node scripts/hydrate-global.js
+
+# For UK-specific data
+node scripts/hydrate-gb.js
 ```
 
-The script will insert two customers and a number of orders into the database with static IDs that are referenced in the included Postman tests.
+These scripts insert customers and orders with static IDs that are referenced in the included Postman tests.
 
-### User and Group Data Hydration Script
+### User and Group Data Initialization
 
-The `scripts/create-users.js` script populates the Cognito user group with a number of users and user groups to be used with the REST API. Before running the script, the `userPoolId` value of `{USER_POOL_ID}` should be replaced with the id of the user pool created during the CDK deployment.
+Populate the Cognito user pool with test users and groups:
+
+1. Edit `scripts/create-users.js` and replace `{USER_POOL_ID}` with the ID of the user pool created during deployment
+2. Run the script:
 
 ```bash
-$ ./scripts/create-users.js
+node scripts/create-users.js
 ```
 
-The data persisted to the Cognito user pool represent all of the possible users and roles that can use the Order REST API.
+This creates various users with different roles for testing the API's authorization controls.
 
 ## Using the API
 
-The Order API can be used post-deployment via the public URL generated by the API Gateway deployment. The API requires callers to be logged into the Cognito user pool.
+### Authentication
 
-### User Login
+The API requires authentication via Cognito. Login utility scripts are provided in the `scripts/login` directory for each test user:
 
-Login utility scripts have been provided in the `scripts/login` directory for each user that logs in the user on execution. The users ID Token is displayed in the console on completion that can be used when sending requests to the REST API. Before running the login scripts, the `clientId` value of `{CLIENT_ID}` should be replaced with the id of the user pool client created during the CDK deployment.
+1. Edit the login scripts in `scripts/login/` and replace `{CLIENT_ID}` with the ID of the user pool client created during deployment
+2. Run a login script to obtain an ID token:
 
-### Postman Collection
+```bash
+# Example: Login as user "Aron"
+./scripts/login/aron.sh
+```
 
-A postman collection named `Auth.postman_collection.json` has been included in the project that contains all of the possible requests users and groups of users can send to the API, provided with a suffix stating whether the request should be allowed or denied. 
+The script will display the user's ID token in the console, which can be used in API requests.
 
-The postman collection requires two environment variables providing the URL of the API and the users auth ID Token. 
+### API Testing with Postman
+
+A Postman collection (`postman_collection.json`) is included in the project that contains all possible API requests with annotations indicating whether each request should be allowed or denied based on the user's permissions.
+
+To use the collection:
+
+1. Import the collection into Postman
+2. Create a Postman environment with two variables:
+   - `api_url`: The URL of your deployed API Gateway
+   - `id_token`: The ID token obtained from the login script
+3. Run the requests to test the API functionality and authorization rules
+
+You can also run the tests using Newman (Postman's command-line collection runner) as described in the `test/integration/README.md` file:
+
+```bash
+COUNTRY={country} API_URL={complete API url including environment stage} npm run test:integration
+```
+
+For example:
+
+```bash
+COUNTRY=gb API_URL=https://9c16xt6wzj.execute-api.eu-west-1.amazonaws.com/prod/ npm run test:integration
+```
+
+## Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run integration tests
+npm run test:integration
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

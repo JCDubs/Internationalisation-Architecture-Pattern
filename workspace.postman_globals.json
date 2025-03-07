@@ -1,0 +1,26 @@
+{
+	"id": "6855a291-f877-4199-8e11-9deb10f780e3",
+	"values": [
+		{
+			"key": "id_token",
+			"value": "YOUR_ID_TOKEN",
+			"enabled": true
+		},
+		{
+			"key": "api_url",
+			"value": "YOUR_API_URL",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "",
+			"value": "",
+			"type": "default",
+			"enabled": false
+		}
+	],
+	"name": "Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2025-03-07T14:35:49.949Z",
+	"_postman_exported_using": "Postman/10.16.9"
+}
